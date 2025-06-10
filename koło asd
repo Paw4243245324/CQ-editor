@@ -1,0 +1,31 @@
+import cadquery as cq
+import math
+
+# Parametry
+outer_diameter = 100.0  # mm
+width = 33.0  # mm
+axle_hole_diameter = 12.0  # mm
+fillet_radius = 1.5
+spoke_count = 5
+spoke_width = 6.0
+spoke_length = outer_diameter / 2 - 10
+
+# Tworzenie koła
+wheel = cq.Workplane("XY").circle(outer_diameter / 2).extrude(width)
+
+# Otwór na oś
+wheel = wheel.faces(">Z").workplane().hole(axle_hole_diameter)
+
+# Wycięcia ramion (spokes)
+angle_step = 360 / spoke_count
+for i in range(spoke_count):
+    angle = i * angle_step
+    x = math.cos(math.radians(angle)) * spoke_length / 2
+    y = math.sin(math.radians(angle)) * spoke_length / 2
+    wheel = wheel.faces(">Z").workplane().center(x, y).rect(spoke_length, spoke_width).cutThruAll()
+
+# Zaokrąglenie krawędzi
+wheel = wheel.edges().fillet(fillet_radius)
+
+# Eksport
+cq.exporters.export(wheel, 'kolo_100mm_bez_lozyska.stl')
